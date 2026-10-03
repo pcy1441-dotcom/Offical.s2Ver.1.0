@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PINEAPPLE'S RNG</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  background:#050505;
+  color:#eee;
+  font-family:Arial,"Noto Sans KR",sans-serif;
+}
+
+body{
+  overflow-x:hidden;
+}
+
+/* =========================
+   상단 테이프
+========================= */
+
+.tape{
+  width:100%;
+  height:36px;
+  overflow:hidden;
+  background:#b8d94b;
+  color:#080808;
+  display:flex;
+  align-items:center;
+  white-space:nowrap;
+  border-bottom:2px solid #080808;
+  position:relative;
+  z-index:20;
+}
+
+.tape-track{
+  display:flex;
+  width:max-content;
+  animation:tapeMove 200s linear infinite;
+  will-change:transform;
+}
+
+.tape-set{
+  display:flex;
+  align-items:center;
+  flex-shrink:0;
+}
+
+.tape-item{
+  display:inline-flex;
+  align-items:center;
+  font-size:15px;
+  line-height:1;
+  font-weight:700;
+  padding:0 15px;
+  white-space:nowrap;
+}
+
+.tape-separator{
+  font-size:16px;
+  font-weight:900;
+}
+
+@keyframes tapeMove{
+  from{
+    transform:translateX(0);
+  }
+  to{
+    transform:translateX(-50%);
+  }
+}
+
+/* =========================
+   전체
+========================= */
+
+.wrapper{
+  width:min(920px,calc(100% - 32px));
+  margin:0 auto;
+  padding:55px 0 80px;
+}
+
+/* =========================
+   제목
+========================= */
+
+.title-wrap{
+  display:flex;
+  align-items:center;
+  gap:22px;
+  margin-bottom:45px;
+}
+
+.title-line{
+  flex:1;
+  height:1px;
+  background:#353535;
+}
+
+h1{
+  margin:0;
+  color:#ffd400;
+  font-size:clamp(28px,5.5vw,43px);
+  font-weight:550;
+  letter-spacing:5px;
+  white-space:nowrap;
+}
+
+/* =========================
+   탭
+========================= */
+
+.tabs{
+  display:flex;
+  border-bottom:1px solid #292929;
+  margin-bottom:28px;
+}
+
+.tab{
+  flex:1;
+  padding:15px 10px;
+  border:0;
+  border-bottom:2px solid transparent;
+  background:none;
+  color:#777;
+  font-size:15px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.tab.active{
+  color:#ffd400;
+  border-bottom-color:#ffd400;
+}
+
+/* =========================
+   공통 패널
+========================= */
+
+.panel{
+  display:none;
+}
+
+.panel.active{
+  display:block;
+}
+
+.section{
+  border:1px solid #272727;
+  background:#090909;
+  padding:22px;
+  margin-bottom:18px;
+}
+
+.section-title{
+  color:#ffd400;
+  font-size:14px;
+  font-weight:700;
+  margin-bottom:15px;
+  letter-spacing:.5px;
+}
+
+/* =========================
+   입력
+========================= */
+
+.input-row{
+  display:flex;
+  gap:8px;
+  width:100%;
+}
+
+input{
+  min-width:0;
+  width:100%;
+  background:#111;
+  border:1px solid #333;
+  color:#eee;
+  padding:12px;
+  outline:none;
+  border-radius:0;
+  font-size:14px;
+}
+
+input:focus{
+  border-color:#ffd400;
+}
+
+.add-btn{
+  flex:0 0 78px;
+  width:78px;
+  min-width:78px;
+  height:44px;
+  padding:0 15px;
+  white-space:nowrap;
+  writing-mode:horizontal-tb;
+  text-orientation:mixed;
+  box-shadow:none;
+}
+
+button{
+  border:1px solid #3a3a3a;
+  background:#111;
+  color:#eee;
+  padding:11px 16px;
+  border-radius:0;
+  cursor:pointer;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+button:hover{
+  border-color:#ffd400;
+  color:#ffd400;
+}
+
+button.primary{
+  background:#ffd400;
+  color:#080808;
+  border-color:#ffd400;
+  font-weight:700;
+}
+
+button.primary:hover{
+  background:#ffe34d;
+  color:#080808;
+}
+
+button:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+}
+
+/* =========================
+   참가자
+========================= */
+
+.participants{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:15px;
+}
+
+.person{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid #303030;
+  background:#101010;
+  padding:7px 9px;
+  font-size:13px;
+}
+
+.person button{
+  border:0;
+  padding:0;
+  color:#777;
+  background:none;
+  font-size:15px;
+}
+
+.person button:hover{
+  color:#ffd400;
+}
+
+/* =========================
+   팀 설정
+========================= */
+
+.team-count-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.team-count-row label{
+  font-size:14px;
+  color:#aaa;
+  white-space:nowrap;
+}
+
+.team-count{
+  width:90px;
+}
+
+.team-sizes{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+  gap:8px;
+  margin-top:15px;
+}
+
+.team-size-item{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.team-size-item span{
+  color:#aaa;
+  font-size:12px;
+}
+
+.team-size-item input{
+  width:100%;
+}
+
+/* =========================
+   금지 조합
+========================= */
+
+.ban-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:15px;
+}
+
+.ban-row{
+  display:grid;
+  grid-template-columns:1fr auto 1fr auto;
+  gap:8px;
+  align-items:center;
+}
+
+.ban-row select{
+  width:100%;
+  background:#111;
+  border:1px solid #333;
+  color:#eee;
+  padding:10px;
+  border-radius:0;
+}
+
+.ban-row span{
+  color:#555;
+}
+
+.remove-ban{
+  padding:9px 11px;
+}
+
+/* =========================
+   팀 결과
+========================= */
+
+.team-results{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  margin-top:18px;
+}
+
+.team-card{
+  border:1px solid #303030;
+  background:#0c0c0c;
+  padding:17px;
+  min-height:120px;
+}
+
+.team-card h3{
+  margin:0 0 13px;
+  color:#ffd400;
+  font-size:15px;
+}
+
+.team-member{
+  font-size:14px;
+  padding:4px 0;
+  color:#ccc;
+}
+
+/* =========================
+   한 명 뽑기
+========================= */
+
+.pick-area{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.pick-options{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.checkbox-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#aaa;
+  font-size:13px;
+}
+
+.checkbox-wrap input{
+  width:auto;
+}
+
+.slot-window{
+  position:relative;
+  width:min(520px,100%);
+  height:210px;
+  overflow:hidden;
+  border-top:1px solid #242424;
+  border-bottom:1px solid #242424;
+  background:#080808;
+}
+
+.slot-center{
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  height:46px;
+  transform:translateY(-50%);
+  pointer-events:none;
+  opacity:0;
+}
+
+.slot-track{
+  position:absolute;
+  width:100%;
+  left:0;
+  top:0;
+  transform:translateY(0);
+  will-change:transform;
+}
+
+.slot-item{
+  width:100%;
+  height:46px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  font-size:20px;
+  font-weight:600;
+
+  color:#aaa;
+  opacity:.72;
+
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+.slot-item.winner{
+  color:#ffd400;
+  font-size:25px;
+  font-weight:800;
+  opacity:1;
+}
+
+.pick-button{
+  margin-top:25px;
+  min-width:150px;
+}
+
+/* =========================
+   폭죽
+========================= */
+
+.confetti-layer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:100;
+  overflow:hidden;
+}
+
+.confetti{
+  position:absolute;
+  top:-14px;
+  opacity:0;
+
+  animation:
+    confettiFall
+    6s
+    cubic-bezier(.18,.65,.35,1)
+    forwards;
+}
+
+@keyframes confettiFall{
+
+  0%{
+    opacity:0;
+    transform:
+      translate3d(0,-10px,0)
+      rotate(0deg);
+  }
+
+  8%{
+    opacity:1;
+  }
+
+  100%{
+    opacity:.82;
+    transform:
+      translate3d(
+        var(--x),
+        calc(100vh + 40px),
+        0
+      )
+      rotate(var(--r));
+  }
+}
+
+/* =========================
+   모바일
+========================= */
+
+@media(max-width:600px){
+
+  .tape{
+    height:32px;
+  }
+
+  .tape-item{
+    font-size:14px;
+    padding:0 12px;
+  }
+
+  .tape-separator{
+    font-size:15px;
+  }
+
+  .wrapper{
+    width:calc(100% - 22px);
+    padding-top:40px;
+  }
+
+  .title-wrap{
+    gap:12px;
+    margin-bottom:35px;
+  }
+
+  h1{
+    font-size:25px;
+    letter-spacing:3px;
+  }
+
+  .section{
+    padding:17px;
+  }
+
+  .add-btn{
+    flex:0 0 72px;
+    width:72px;
+    min-width:72px;
+    height:44px;
+    padding:0 12px;
+  }
+
+  .ban-row{
+    grid-template-columns:1fr auto 1fr;
+  }
+
+  .remove-ban{
+    grid-column:1 / -1;
+    width:100%;
+  }
+
+  .slot-window{
+    height:200px;
+  }
+
+  .slot-item{
+    font-size:18px;
+  }
+
+  .slot-item.winner{
+    font-size:23px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="tape">
+  <div class="tape-track" id="tapeTrack"></div>
+</div>
+
+<div class="wrapper">
+
+  <div class="title-wrap">
+    <div class="title-line"></div>
+    <h1>PINEAPPLE'S RNG</h1>
+    <div class="title-line"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="team">
+      팀 배정
+    </button>
+
+    <button class="tab" data-tab="pick">
+      한 명 뽑기
+    </button>
+  </div>
+
+  <!-- =========================
+       팀 배정
+  ========================= -->
+
+  <section class="panel active" id="teamPanel">
+
+    <div class="section">
+
+      <div class="section-title">
+        참가자
+      </div>
+
+      <div class="input-row">
+
+        <input
+          id="teamNameInput"
+          type="text"
+          placeholder="이름 입력"
+        >
+
+        <button
+          class="add-btn"
+          id="addTeamPerson"
+        >
+          추가
+        </button>
+
+      </div>
+
+      <div
+        class="participants"
+        id="teamParticipants"
+      ></div>
+
+    </div>
+
+    <div class="section">
+
+      <div class="section-title">
+        팀 설정
+      </div>
+
+      <div class="team-count-row">
+
+        <label for="teamCount">
+          팀 수
+        </label>
+
+        <input
+          class="team-count"
+          id="teamCount"
+          type="number"
+          min="2"
+          max="20"
+          value="2"
+        >
+
+      </div>
+
+      <div
+        class="team-sizes"
+        id="teamSizes"
+      ></div>
+
+    </div>
+
+    <div class="section">
+
+      <div class="section-title">
+        같은 팀 금지
+      </div>
+
+      <div class="input-row">
+
+        <button id="addBan">
+          조합 추가
+        </button>
+
+      </div>
+
+      <div
+        class="ban-list"
+        id="banList"
+      ></div>
+
+    </div>
+
+    <button
+      class="primary"
+      id="makeTeams"
+      style="width:100%;"
+    >
+      팀 배정하기
+    </button>
+
+    <div
+      class="team-results"
+      id="teamResults"
+    ></div>
+
+  </section>
+
+  <!-- =========================
+       한 명 뽑기
+  ========================= -->
+
+  <section class="panel" id="pickPanel">
+
+    <div class="section">
+
+      <div class="section-title">
+        참가자
+      </div>
+
+      <div class="input-row">
+
+        <input
+          id="pickNameInput"
+          type="text"
+          placeholder="이름 입력"
+        >
+
+        <button
+          class="add-btn"
+          id="addPickPerson"
+        >
+          추가
+        </button>
+
+      </div>
+
+      <div
+        class="participants"
+        id="pickParticipants"
+      ></div>
+
+    </div>
+
+    <div class="section">
+
+      <div class="pick-options">
+
+        <label class="checkbox-wrap">
+
+          <input
+            type="checkbox"
+            id="noDuplicate"
+          >
+
+          중복 없이 뽑기
+
+        </label>
+
+      </div>
+
+      <div class="pick-area">
+
+        <div
+          class="slot-window"
+          id="slotWindow"
+        >
+
+          <div
+            class="slot-track"
+            id="slotTrack"
+          ></div>
+
+          <div
+            class="slot-center"
+            id="slotCenter"
+          ></div>
+
+        </div>
+
+        <button
+          class="primary pick-button"
+          id="pickButton"
+        >
+          뽑기
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<div
+  class="confetti-layer"
+  id="confettiLayer"
+></div>
+
+
+<script>
+
+/* =====================================================
+   데이터
+===================================================== */
+
+let participants = [];
+let bannedPairs = [];
+let pickedNames = new Set();
+
+let isDrawing = false;
+let drawingTimer = null;
+
+
+/* =====================================================
+   테이프
+===================================================== */
+
+const tapePhrases = [
+  "파인애플 맛있다",
+  "🍍🍍🍍🍍🍍🍍",
+  "파인애플=파인애플",
+  "사과가 파이면? 파인애플",
+  "소나무사과를 4글자로? 파인애플(\"pine\" \"apple\")",
+  "6인방🍍"
+];
+
+function shuffle(array){
+
+  const arr = [...array];
+
+  for(
+    let i=arr.length-1;
+    i>0;
+    i--
+  ){
+
+    const j =
+      Math.floor(
+        Math.random()*(i+1)
+      );
+
+    [
+      arr[i],
+      arr[j]
+    ] = [
+      arr[j],
+      arr[i]
+    ];
+  }
+
+  return arr;
+}
+
+function createTapeSet(){
+
+  const set =
+    document.createElement("div");
+
+  set.className =
+    "tape-set";
+
+  shuffle(tapePhrases)
+    .forEach((phrase,index)=>{
+
+      const item =
+        document.createElement("span");
+
+      item.className =
+        "tape-item";
+
+      item.textContent =
+        phrase;
+
+      set.appendChild(item);
+
+      if(
+        index !==
+        tapePhrases.length-1
+      ){
+
+        const separator =
+          document.createElement("span");
+
+        separator.className =
+          "tape-separator";
+
+        separator.textContent =
+          "◇";
+
+        set.appendChild(separator);
+      }
+    });
+
+  return set;
+}
+
+const tapeTrack =
+  document.getElementById(
+    "tapeTrack"
+  );
+
+for(let i=0;i<5;i++){
+
+  tapeTrack.appendChild(
+    createTapeSet()
+  );
+}
+
+[
+  ...tapeTrack.children
+].forEach(item=>{
+
+  tapeTrack.appendChild(
+    item.cloneNode(true)
+  );
+
+});
+
+
+/* =====================================================
+   탭
+===================================================== */
+
+document
+  .querySelectorAll(".tab")
+  .forEach(tab=>{
+
+    tab.addEventListener(
+      "click",
+      ()=>{
+
+        document
+          .querySelectorAll(".tab")
+          .forEach(t=>{
+            t.classList.remove(
+              "active"
+            );
+          });
+
+        document
+          .querySelectorAll(".panel")
+          .forEach(panel=>{
+            panel.classList.remove(
+              "active"
+            );
+          });
+
+        tab.classList.add(
+          "active"
+        );
+
+        if(
+          tab.dataset.tab ===
+          "team"
+        ){
+
+          document
+            .getElementById(
+              "teamPanel"
+            )
+            .classList.add(
+              "active"
+            );
+
+        }else{
+
+          document
+            .getElementById(
+              "pickPanel"
+            )
+            .classList.add(
+              "active"
+            );
+        }
+
+      }
+    );
+
+  });
+
+
+/* =====================================================
+   참가자
+===================================================== */
+
+function renderParticipants(){
+
+  renderTeamParticipants();
+  renderPickParticipants();
+
+  updateTeamSizes();
+  renderBanList();
+}
+
+
+function renderTeamParticipants(){
+
+  const container =
+    document.getElementById(
+      "teamParticipants"
+    );
+
+  container.innerHTML = "";
+
+  participants.forEach(
+    (name,index)=>{
+
+      const person =
+        document.createElement(
+          "div"
+        );
+
+      person.className =
+        "person";
+
+      const text =
+        document.createElement(
+          "span"
+        );
+
+      text.textContent =
+        name;
+
+      const remove =
+        document.createElement(
+          "button"
+        );
+
+      remove.textContent =
+        "×";
+
+      remove.addEventListener(
+        "click",
+        ()=>{
+
+          participants.splice(
+            index,
+            1
+          );
+
+          bannedPairs =
+            bannedPairs.filter(
+              pair =>
+                pair[0] !== name &&
+                pair[1] !== name
+            );
+
+          pickedNames.delete(
+            name
+          );
+
+          renderParticipants();
+        }
+      );
+
+      person.appendChild(text);
+      person.appendChild(remove);
+
+      container.appendChild(person);
+    }
+  );
+}
+
+
+function renderPickParticipants(){
+
+  const container =
+    document.getElementById(
+      "pickParticipants"
+    );
+
+  container.innerHTML = "";
+
+  participants.forEach(
+    (name,index)=>{
+
+      const person =
+        document.createElement(
+          "div"
+        );
+
+      person.className =
+        "person";
+
+      const text =
+        document.createElement(
+          "span"
+        );
+
+      text.textContent =
+        name;
+
+      const remove =
+        document.createElement(
+          "button"
+        );
+
+      remove.textContent =
+        "×";
+
+      remove.addEventListener(
+        "click",
+        ()=>{
+
+          participants.splice(
+            index,
+            1
+          );
+
+          bannedPairs =
+            bannedPairs.filter(
+              pair =>
+                pair[0] !== name &&
+                pair[1] !== name
+            );
+
+          pickedNames.delete(
+            name
+          );
+
+          renderParticipants();
+        }
+      );
+
+      person.appendChild(text);
+      person.appendChild(remove);
+
+      container.appendChild(person);
+    }
+  );
+}
+
+
+/* =====================================================
+   참가자 추가
+===================================================== */
+
+function addParticipant(input){
+
+  const name =
+    input.value.trim();
+
+  if(!name){
+    return;
+  }
+
+  if(
+    participants.includes(name)
+  ){
+
+    input.value = "";
+    return;
+  }
+
+  participants.push(name);
+
+  input.value = "";
+
+  renderParticipants();
+}
+
+
+document
+  .getElementById(
+    "addTeamPerson"
+  )
+  .addEventListener(
+    "click",
+    ()=>{
+      addParticipant(
+        document.getElementById(
+          "teamNameInput"
+        )
+      );
+    }
+  );
+
+
+document
+  .getElementById(
+    "teamNameInput"
+  )
+  .addEventListener(
+    "keydown",
+    e=>{
+      if(e.key==="Enter"){
+        addParticipant(
+          e.target
+        );
+      }
+    }
+  );
+
+
+document
+  .getElementById(
+    "addPickPerson"
+  )
+  .addEventListener(
+    "click",
+    ()=>{
+      addParticipant(
+        document.getElementById(
+          "pickNameInput"
+        )
+      );
+    }
+  );
+
+
+document
+  .getElementById(
+    "pickNameInput"
+  )
+  .addEventListener(
+    "keydown",
+    e=>{
+      if(e.key==="Enter"){
+        addParticipant(
+          e.target
+        );
+      }
+    }
+  );
+
+
+/* =====================================================
+   팀 수
+===================================================== */
+
+const teamCountInput =
+  document.getElementById(
+    "teamCount"
+  );
+
+const teamSizesContainer =
+  document.getElementById(
+    "teamSizes"
+  );
+
+
+function getTeamCount(){
+
+  let count =
+    parseInt(
+      teamCountInput.value,
+      10
+    );
+
+  if(
+    isNaN(count)
+  ){
+    count = 2;
+  }
+
+  return Math.max(
+    2,
+    Math.min(20,count)
+  );
+}
+
+
+function updateTeamSizes(){
+
+  const count =
+    getTeamCount();
+
+  teamCountInput.value =
+    count;
+
+  teamSizesContainer.innerHTML =
+    "";
+
+  const total =
+    participants.length;
+
+  const base =
+    Math.floor(
+      total/count
+    );
+
+  const remainder =
+    total%count;
+
+  for(
+    let i=0;
+    i<count;
+    i++
+  ){
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+    box.className =
+      "team-size-item";
+
+    const label =
+      document.createElement(
+        "span"
+      );
+
+    label.textContent =
+      `${String.fromCharCode(65+i)}팀`;
+
+    const input =
+      document.createElement(
+        "input"
+      );
+
+    input.type =
+      "number";
+
+    input.min =
+      "0";
+
+    input.value =
+      base +
+      (
+        i >= count-remainder
+          ? 1
+          : 0
+      );
+
+    box.appendChild(label);
+    box.appendChild(input);
+
+    teamSizesContainer.appendChild(
+      box
+    );
+  }
+}
+
+teamCountInput.addEventListener(
+  "change",
+  updateTeamSizes
+);
+
+teamCountInput.addEventListener(
+  "blur",
+  updateTeamSizes
+);
+
+
+/* =====================================================
+   금지 조합
+===================================================== */
+
+const banList =
+  document.getElementById(
+    "banList"
+  );
+
+document
+  .getElementById(
+    "addBan"
+  )
+  .addEventListener(
+    "click",
+    ()=>{
+
+      if(
+        participants.length < 2
+      ){
+        return;
+      }
+
+      bannedPairs.push([
+        participants[0],
+        participants[1]
+      ]);
+
+      renderBanList();
+    }
+  );
+
+
+function renderBanList(){
+
+  banList.innerHTML =
+    "";
+
+  bannedPairs.forEach(
+    (pair,index)=>{
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "ban-row";
+
+      const selectA =
+        document.createElement(
+          "select"
+        );
+
+      const middle =
+        document.createElement(
+          "span"
+        );
+
+      middle.textContent =
+        "×";
+
+      const selectB =
+        document.createElement(
+          "select"
+        );
+
+      participants.forEach(
+        name=>{
+
+          const a =
+            document.createElement(
+              "option"
+            );
+
+          a.value = name;
+          a.textContent = name;
+
+          const b =
+            document.createElement(
+              "option"
+            );
+
+          b.value = name;
+          b.textContent = name;
+
+          selectA.appendChild(a);
+          selectB.appendChild(b);
+        }
+      );
+
+      selectA.value =
+        pair[0];
+
+      selectB.value =
+        pair[1];
+
+      selectA.addEventListener(
+        "change",
+        ()=>{
+          pair[0] =
+            selectA.value;
+        }
+      );
+
+      selectB.addEventListener(
+        "change",
+        ()=>{
+          pair[1] =
+            selectB.value;
+        }
+      );
+
+      const remove =
+        document.createElement(
+          "button"
+        );
+
+      remove.className =
+        "remove-ban";
+
+      remove.textContent =
+        "삭제";
+
+      remove.addEventListener(
+        "click",
+        ()=>{
+          bannedPairs.splice(
+            index,
+            1
+          );
+
+          renderBanList();
+        }
+      );
+
+      row.appendChild(selectA);
+      row.appendChild(middle);
+      row.appendChild(selectB);
+      row.appendChild(remove);
+
+      banList.appendChild(row);
+    }
+  );
+}
+
+
+/* =====================================================
+   팀 배정
+===================================================== */
+
+document
+  .getElementById(
+    "makeTeams"
+  )
+  .addEventListener(
+    "click",
+    makeTeams
+  );
+
+
+function makeTeams(){
+
+  const count =
+    getTeamCount();
+
+  if(
+    participants.length === 0
+  ){
+    return;
+  }
+
+  const inputs =
+    [
+      ...teamSizesContainer
+        .querySelectorAll(
+          "input"
+        )
+    ];
+
+  const sizes =
+    inputs.map(input=>{
+
+      const value =
+        parseInt(
+          input.value,
+          10
+        );
+
+      return isNaN(value)
+        ? 0
+        : Math.max(0,value);
+    });
+
+  const total =
+    sizes.reduce(
+      (sum,value)=>
+        sum+value,
+      0
+    );
+
+  if(
+    total !==
+    participants.length
+  ){
+    return;
+  }
+
+  const teams =
+    Array.from(
+      {length:count},
+      ()=>[]
+    );
+
+  function canJoin(
+    name,
+    team
+  ){
+
+    for(
+      const pair of
+      bannedPairs
+    ){
+
+      if(
+        pair[0] !== name &&
+        pair[1] !== name
+      ){
+        continue;
+      }
+
+      const other =
+        pair[0] === name
+          ? pair[1]
+          : pair[0];
+
+      if(
+        team.includes(other)
+      ){
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  const sorted =
+    shuffle(
+      participants
+    ).sort((a,b)=>{
+
+      const aCount =
+        bannedPairs.filter(
+          pair =>
+            pair.includes(a)
+        ).length;
+
+      const bCount =
+        bannedPairs.filter(
+          pair =>
+            pair.includes(b)
+        ).length;
+
+      return bCount-aCount;
+    });
+
+  for(
+    const name of sorted
+  ){
+
+    const possible = [];
+
+    for(
+      let i=0;
+      i<count;
+      i++
+    ){
+
+      if(
+        teams[i].length <
+        sizes[i] &&
+        canJoin(
+          name,
+          teams[i]
+        )
+      ){
+
+        possible.push(i);
+      }
+    }
+
+    if(
+      possible.length===0
+    ){
+      return;
+    }
+
+    possible.sort(
+      (a,b)=>
+        teams[a].length -
+        teams[b].length
+    );
+
+    const selected =
+      possible[
+        Math.floor(
+          Math.random()*
+          possible.length
+        )
+      ];
+
+    teams[selected].push(
+      name
+    );
+  }
+
+  renderTeamResults(
+    teams
+  );
+}
+
+
+function renderTeamResults(
+  teams
+){
+
+  const container =
+    document.getElementById(
+      "teamResults"
+    );
+
+  container.innerHTML =
+    "";
+
+  teams.forEach(
+    (team,index)=>{
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "team-card";
+
+      const title =
+        document.createElement(
+          "h3"
+        );
+
+      title.textContent =
+        `${String.fromCharCode(65+index)}팀`;
+
+      card.appendChild(title);
+
+      shuffle(team)
+        .forEach(name=>{
+
+          const member =
+            document.createElement(
+              "div"
+            );
+
+          member.className =
+            "team-member";
+
+          member.textContent =
+            name;
+
+          card.appendChild(
+            member
+          );
+        });
+
+      container.appendChild(
+        card
+      );
+    }
+  );
+}
+
+
+/* =====================================================
+   한 명 뽑기
+===================================================== */
+
+const slotWindow =
+  document.getElementById(
+    "slotWindow"
+  );
+
+const slotTrack =
+  document.getElementById(
+    "slotTrack"
+  );
+
+const pickButton =
+  document.getElementById(
+    "pickButton"
+  );
+
+const ITEM_HEIGHT =
+  46;
+
+let slotY = 0;
+
+
+/* 참가자 반복 배치 */
+function createSlotItems(names){
+
+  slotTrack.innerHTML = "";
+
+  const repeated = [];
+
+  for(
+    let i=0;
+    i<120;
+    i++
+  ){
+
+    repeated.push(
+      names[
+        i%names.length
+      ]
+    );
+  }
+
+  repeated.forEach(name=>{
+
+    const item =
+      document.createElement(
+        "div"
+      );
+
+    item.className =
+      "slot-item";
+
+    item.textContent =
+      name;
+
+    item.dataset.name =
+      name;
+
+    slotTrack.appendChild(item);
+  });
+}
+
+
+/* 중앙에 가장 가까운 이름 찾기 */
+function decideActualWinner(){
+
+  const windowRect =
+    slotWindow.getBoundingClientRect();
+
+  const centerY =
+    windowRect.top +
+    windowRect.height/2;
+
+  const items =
+    [
+      ...slotTrack.querySelectorAll(
+        ".slot-item"
+      )
+    ];
+
+  let winner = null;
+  let closest = Infinity;
+
+  items.forEach(item=>{
+
+    const rect =
+      item.getBoundingClientRect();
+
+    const itemCenter =
+      rect.top +
+      rect.height/2;
+
+    const distance =
+      Math.abs(
+        itemCenter-centerY
+      );
+
+    if(
+      distance < closest
+    ){
+
+      closest = distance;
+      winner = item;
+    }
+  });
+
+  return winner;
+}
+
+
+/* 당첨자 강조 */
+function emphasizeWinner(winner){
+
+  const items =
+    [
+      ...slotTrack.querySelectorAll(
+        ".slot-item"
+      )
+    ];
+
+  items.forEach(item=>{
+    item.classList.remove("winner");
+  });
+
+  if(winner){
+    winner.classList.add("winner");
+  }
+}
+
+
+/*
+  현재 CSS transform의 실제 Y값을 가져온다.
+  스킵 시 내부 slotY와 화면상의 위치가 달라지는
+  문제를 막기 위해 사용.
+*/
+function getCurrentTransformY(){
+
+  const transform =
+    getComputedStyle(
+      slotTrack
+    ).transform;
+
+  if(
+    !transform ||
+    transform === "none"
+  ){
+    return 0;
+  }
+
+  const match =
+    transform.match(
+      /matrix(?:3d)?\((.+)\)/
+    );
+
+  if(!match){
+    return 0;
+  }
+
+  const values =
+    match[1]
+      .split(",")
+      .map(Number);
+
+  if(
+    transform.startsWith("matrix3d")
+  ){
+
+    return values[13] || 0;
+
+  }else{
+
+    return values[5] || 0;
+  }
+}
+
+
+/*
+  현재 화면에서의 움직임을
+  정확히 고정한다.
+*/
+function freezeCurrentPosition(){
+
+  const currentY =
+    getCurrentTransformY();
+
+  slotY =
+    currentY;
+
+  slotTrack.style.transition =
+    "none";
+
+  slotTrack.style.transform =
+    `translateY(${slotY}px)`;
+
+  /*
+    브라우저가 현재 위치를 확실히 반영하도록
+    강제 레이아웃 계산.
+  */
+  void slotTrack.offsetHeight;
+}
+
+
+/*
+  당첨자를 중앙으로 이동.
+*/
+function moveWinnerToCenter(winner){
+
+  if(!winner){
+    return;
+  }
+
+  const windowRect =
+    slotWindow.getBoundingClientRect();
+
+  const centerY =
+    windowRect.top +
+    windowRect.height/2;
+
+  const winnerRect =
+    winner.getBoundingClientRect();
+
+  const winnerY =
+    winnerRect.top +
+    winnerRect.height/2;
+
+  const correction =
+    centerY-winnerY;
+
+  slotY += correction;
+
+  slotTrack.style.transition =
+    "transform .42s cubic-bezier(.2,.8,.2,1)";
+
+  slotTrack.style.transform =
+    `translateY(${slotY}px)`;
+}
+
+
+/* =====================================================
+   폭죽
+===================================================== */
+
+function createConfetti(){
+
+  const layer =
+    document.getElementById(
+      "confettiLayer"
+    );
+
+  layer.innerHTML =
+    "";
+
+  const colors = [
+    "#ffd400",
+    "#fff27a",
+    "#b8d94b",
+    "#eeeeee"
+  ];
+
+  for(
+    let i=0;
+    i<100;
+    i++
+  ){
+
+    const piece =
+      document.createElement(
+        "div"
+      );
+
+    piece.className =
+      "confetti";
+
+    const startX =
+      window.innerWidth/2 +
+      (Math.random()-0.5)*24;
+
+    const spread =
+      (Math.random()-0.5) *
+      window.innerWidth *
+      1.25;
+
+    piece.style.left =
+      `${startX}px`;
+
+    piece.style.setProperty(
+      "--x",
+      `${spread}px`
+    );
+
+    piece.style.setProperty(
+      "--r",
+      `${(Math.random()-0.5)*1500}deg`
+    );
+
+    piece.style.animationDelay =
+      `${Math.random()*0.7}s`;
+
+    piece.style.animationDuration =
+      `${5.8+Math.random()*1.5}s`;
+
+    piece.style.width =
+      `${5+Math.random()*4}px`;
+
+    piece.style.height =
+      `${8+Math.random()*7}px`;
+
+    piece.style.background =
+      colors[
+        Math.floor(
+          Math.random()*colors.length
+        )
+      ];
+
+    layer.appendChild(piece);
+  }
+
+  setTimeout(()=>{
+    layer.innerHTML = "";
+  },8500);
+}
+
+
+/* =====================================================
+   결과 처리
+===================================================== */
+
+function finishPick(){
+
+  if(!isDrawing){
+    return;
+  }
+
+  if(drawingTimer){
+
+    clearTimeout(
+      drawingTimer
+    );
+
+    drawingTimer = null;
+  }
+
+  /*
+    스킵을 눌렀을 때도
+    현재 화면 위치에서 바로 판정.
+  */
+  freezeCurrentPosition();
+
+  const winner =
+    decideActualWinner();
+
+  if(!winner){
+
+    isDrawing = false;
+
+    pickButton.disabled =
+      false;
+
+    pickButton.textContent =
+      "뽑기";
+
+    return;
+  }
+
+  const noDuplicate =
+    document.getElementById(
+      "noDuplicate"
+    ).checked;
+
+  const winnerName =
+    winner.dataset.name;
+
+  if(noDuplicate){
+
+    pickedNames.add(
+      winnerName
+    );
+  }
+
+  /*
+    당첨자 확대.
+    다른 이름들은 기존 회색 상태.
+  */
+  emphasizeWinner(
+    winner
+  );
+
+  /*
+    그 다음 당첨자를 정확히 중앙으로 이동.
+  */
+  moveWinnerToCenter(
+    winner
+  );
+
+  setTimeout(()=>{
+
+    createConfetti();
+
+    isDrawing =
+      false;
+
+    pickButton.disabled =
+      false;
+
+    if(
+      noDuplicate &&
+      pickedNames.size >=
+      participants.length
+    ){
+
+      pickButton.textContent =
+        "다시 뽑기";
+
+    }else{
+
+      pickButton.textContent =
+        "뽑기";
+    }
+
+  },460);
+}
+
+
+/* =====================================================
+   뽑기 실행
+===================================================== */
+
+pickButton.addEventListener(
+  "click",
+  ()=>{
+
+    /*
+      돌아가는 중이면
+      스킵하기.
+    */
+    if(isDrawing){
+
+      finishPick();
+
+      return;
+    }
+
+    if(
+      participants.length===0
+    ){
+      return;
+    }
+
+    const noDuplicate =
+      document.getElementById(
+        "noDuplicate"
+      ).checked;
+
+    const available =
+      participants.filter(
+        name =>
+          !noDuplicate ||
+          !pickedNames.has(name)
+      );
+
+
+    if(
+      available.length===0
+    ){
+
+      pickedNames.clear();
+
+      pickButton.textContent =
+        "다시 뽑기";
+
+      return;
+    }
+
+
+    isDrawing = true;
+
+    pickButton.disabled =
+      false;
+
+    pickButton.textContent =
+      "스킵하기";
+
+
+    const order =
+      shuffle(available);
+
+    createSlotItems(
+      order
+    );
+
+
+    /*
+      시작 위치.
+    */
+    const startIndex =
+      24;
+
+    slotY =
+      -(
+        startIndex *
+        ITEM_HEIGHT
+      );
+
+    slotTrack.style.transition =
+      "none";
+
+    slotTrack.style.transform =
+      `translateY(${slotY}px)`;
+
+
+    requestAnimationFrame(()=>{
+
+      requestAnimationFrame(()=>{
+
+        /*
+          기존보다 훨씬 더 멀리 이동한다.
+          따라서 가속 시간이 짧아져도
+          최고속도가 낮아지지 않는다.
+        */
+        const targetIndex =
+          67 +
+          Math.floor(
+            Math.random()*12
+          );
+
+        const target =
+          slotTrack.querySelectorAll(
+            ".slot-item"
+          )[targetIndex];
+
+
+        if(!target){
+
+          isDrawing = false;
+
+          pickButton.disabled =
+            false;
+
+          pickButton.textContent =
+            "뽑기";
+
+          return;
+        }
+
+
+        const windowRect =
+          slotWindow.getBoundingClientRect();
+
+        const centerY =
+          windowRect.top +
+          windowRect.height/2;
+
+
+        const targetRect =
+          target.getBoundingClientRect();
+
+        const targetCenter =
+          targetRect.top +
+          targetRect.height/2;
+
+
+        /*
+          최종 판정 위치에 약간의 랜덤 오차.
+        */
+        const randomOffset =
+          (Math.random()-0.5)*30;
+
+
+        slotY +=
+          centerY -
+          targetCenter +
+          randomOffset;
+
+
+        /*
+          0~0.5초 정도로 빠르게 가속,
+          이후 높은 속도로 충분히 이동,
+          마지막은 길게 자연스럽게 감속.
+
+          이동 거리 자체도 크게 늘렸기 때문에
+          단순히 애니메이션 시간만 늘려서
+          전체가 느려지는 문제가 없다.
+        */
+        slotTrack.style.transition =
+          "transform 7.4s cubic-bezier(.12,.78,.16,1)";
+
+        slotTrack.style.transform =
+          `translateY(${slotY}px)`;
+
+
+        drawingTimer =
+          setTimeout(()=>{
+
+            drawingTimer = null;
+
+            finishPick();
+
+          },7450);
+
+      });
+
+    });
+
+  }
+);
+
+
+/* =====================================================
+   초기화
+===================================================== */
+
+updateTeamSizes();
+renderParticipants();
+
+</script>
+
+</body>
+  </html>
